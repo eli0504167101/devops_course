@@ -1,0 +1,30 @@
+services:
+  master:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: master-node
+    networks:
+      - ansible-net
+    volumes:
+      - ./ansible_cfg:/etc/ansible
+      # הזרקת המפתח הפרטי למאסטר
+      - ./ssh_keys/id_rsa:/root/.ssh/id_rsa:ro
+    stdin_open: true
+    tty: true
+
+  slave:
+    build:
+      context: .
+      dockerfile: Dockerfile.slave
+    container_name: slave-node
+    networks:
+      - ansible-net
+    volumes:
+      # הזרקת המפתח הציבורי לסלייב בתור מפתח מאושר
+      - ./ssh_keys/id_rsa.pub:/home/user/.ssh/authorized_keys:ro
+    # חשוב: וודא שההרשאות על הקובץ בסלייב נכונות (לפעמים דורש התערבות ב-Dockerfile)
+
+networks:
+  ansible-net:
+    driver: bridge
