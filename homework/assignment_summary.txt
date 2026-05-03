@@ -1,0 +1,36 @@
+docker run --name my-mysql -e MYSQL_ROOT_PASSWORD=my-password -p 3406:3306 -d mysql
+
+mysql> SELECT user, host FROM user;
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| root             | %         |
+| mysql.infoschema | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
++------------------+-----------+
+5 rows in set (0.001 sec)
+
+FROM nginx:alpine
+ARG PAGE_TITLE="Default Title"
+RUN echo "<html><body><h1>${PAGE_TITLE}</h1></body></html>" > /usr/share/nginx/html/index.html
+EXPOSE 80
+
+docker build -t eliahu101/my-web-app:v2 --build-arg PAGE_TITLE="Docker Argument port 5023" .
+
+docker run -d -p 5023:80 --name web-5023-v2 eliahu101/my-web-app:v2
+docker run -d -p 5024:80 --name web-5024-v2 eliahu101/my-web-app:v2
+
+
+docker cp web-5023-v2:/usr/share/nginx/html/index.html ../final_index.html
+
+
+docker push eliahu101/my-web-app:v2
+
+docker stats --no-stream
+CONTAINER ID   NAME          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+9be2758884a3   web-5024-v2   0.00%     7.43MiB / 7.608GiB    0.10%     2.97kB / 1.53kB   4.1kB / 12.3kB    9
+74b9890324fd   web-5023-v2   0.00%     7.391MiB / 7.608GiB   0.09%     3.11kB / 1.64kB   2.04MB / 12.3kB   9
+53db1f4c4f3d   my-mysql      0.99%     433.6MiB / 7.608GiB   5.57%     2.79kB / 126B     69.6MB / 289MB    36
+
