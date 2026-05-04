@@ -1,0 +1,22 @@
+services:
+  app:
+    image: pyapp:0.1
+    container_name: pyapp
+    ports:
+      - "8000:3306"
+    environment:
+      - DB_HOST=mysql         # שם השירות של ה-DB
+      - DB_PORT=3306         # פורט פנימי
+      - DB_USER=root          # חובה שיופיע כאן כדי שהקוד יזהה
+      - DB_PASSWORD=my-secret-pw
+      - DB_NAME=my_python_app  # השם של ה-Schema שלך
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:latest
+    container_name: some-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+    ports:
+      - "8400:3306"
