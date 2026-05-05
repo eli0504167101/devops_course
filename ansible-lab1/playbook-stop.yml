@@ -1,0 +1,15 @@
+- hosts: all
+  become: yes
+  gather_facts: no
+
+  tasks:
+
+    - name: Update packages
+      apk:
+        update_cache: yes
+
+
+    - name: Stop Apache safely
+      shell: rc-service apache2 stop || true
+
+   
