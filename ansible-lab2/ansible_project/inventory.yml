@@ -1,0 +1,7 @@
+all:
+  hosts:
+    slave-node:
+      ansible_host: ansible-slave # השם מהקומפוז
+      ansible_user: ansible
+      ansible_ssh_pass: ansible
+      ansible_python_interpreter: /usr/bin/python3

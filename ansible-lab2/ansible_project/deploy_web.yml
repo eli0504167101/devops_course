@@ -1,0 +1,32 @@
+---
+- name: Install and Configure Nginx on Alpine
+  hosts: slave-node
+  become: yes
+
+  tasks:
+    - name: Install Nginx
+      apk:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Ensure web directory exists
+      file:
+        path: /var/www/localhost/htdocs
+        state: directory
+        mode: '0755'
+
+    - name: Create custom index.html
+      copy:
+        content: "<h1>Success! Ansible Managed this Server</h1><p>Created by Eli's Lab</p>"
+        dest: /var/www/localhost/htdocs/index.html
+
+    - name: Configure Nginx to serve the correct directory
+      shell: |
+        sed -i 's|return 404;|root /var/www/localhost/htdocs; index index.html;|' /etc/nginx/http.d/default.conf
+      # הפקודה הזו מחליפה את ה-404 המובנה בנתיב לקובץ שלנו
+
+    - name: Restart Nginx to apply changes
+      shell: |
+        mkdir -p /run/nginx
+        nginx -s reload || nginx

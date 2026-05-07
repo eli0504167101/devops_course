@@ -1,0 +1,21 @@
+# נשתמש בגרסה שציינת
+FROM alpine:3.19
+
+# התיקון: הסרת --no-native ושימוש בשם החבילה הנכון python3
+RUN apk update && apk add openssh python3 sudo
+
+# הגדרת שרת ה-SSH
+RUN ssh-keygen -A
+
+# יצירת משתמש ansible והגדרת סיסמה
+RUN adduser -D ansible && \
+    echo "ansible:ansible" | chpasswd
+
+# מתן הרשאות sudo ללא סיסמה (קריטי לאוטומציה)
+RUN echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# חשיפת פורט 22 (SSH) ופורט 80 (עבור ה-Web שתרצה להריץ)
+EXPOSE 22 80
+
+# הרצת שרת ה-SSH ושמירה על הקונטיינר פעיל
+CMD ["/usr/sbin/sshd", "-D"]

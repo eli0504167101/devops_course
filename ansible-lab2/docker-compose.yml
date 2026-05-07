@@ -1,0 +1,30 @@
+
+
+services:
+  # הגדרת ה-Master (מרכז הבקרה)
+  ansible-master:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: ansible-master
+    networks:
+      - ansible-net
+    volumes:
+      - ./ansible_project:/ansible # סנכרון תיקייה מקומית לתוך הקונטיינר
+    stdin_open: true # מאפשר כניסה אינטראקטיבית (כמו -it)
+    tty: true
+
+  # הגדרת ה-Slave (השרת המנוהל)
+  ansible-slave:
+    build:
+      context: .
+      dockerfile: Dockerfile.slave
+    container_name: ansible-slave
+    ports:
+      - "8080:80" # חשיפת פורט 80 החוצה ל-8080
+    networks:
+      - ansible-net
+
+networks:
+  ansible-net:
+    driver: bridge
