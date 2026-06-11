@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-devops-deployment
+  labels:
+    app: flask-devops
+spec:
+  replicas: 3 # כמות ה-Pods שה-ReplicaSet ינהל וישמור עליהם חיים
+  selector:
+    matchLabels:
+      app: flask-devops
+  template:
+    metadata:
+      labels:
+        app: flask-devops
+    spec:
+      containers:
+      - name: flask-app
+        # החלף את ה-Image הזה ב-Image האמיתי שדחפת ל-Registry (Docker Hub/ECR)
+        image: eli0504167101/flask-devops-app:latest 
+        ports:
+        - containerPort: 5000
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-devops-service
+spec:
+  type: ClusterIP # משמש לגישה פנימית. אם תרצה חשיפה החוצה, שנה ל-NodePort או שלב Ingress Controller
+  selector:
+    app: flask-devops # משייך את ה-SVC ל-Pods שה-Deployment יצר
+  ports:
+    - protocol: TCP
+      port: 80         # הפורט של ה-Service
+      targetPort: 5000 # הפורט עליו מאזין ה-Flask בתוך הקונטיינר
