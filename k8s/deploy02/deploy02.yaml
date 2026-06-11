@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: deploy02
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy02-deployment
+  namespace: deploy02
+  labels:
+    app: deploy02
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: deploy02
+  template:
+    metadata:
+      labels:
+        app: deploy02
+    spec:
+      containers:
+      - name: deploy02 # שם הקונטיינר כפי שביקשת
+        image: eli0504167101/deploy02:v1 # נשתמש בשם הזה ל-Image בדוקר האב
+        ports:
+        - containerPort: 5000
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deploy02-service
+  namespace: deploy02
+spec:
+  type: ClusterIP
+  selector:
+    app: deploy02
+  ports:
+  - port: 80
+    targetPort: 5000
