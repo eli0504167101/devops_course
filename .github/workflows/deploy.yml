@@ -1,11 +1,11 @@
-name: CI-CD Deploy02 to K8s
+name: CI Deploy02 to Docker Hub
 
 on:
   push:
     branches: [ "master" ]
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,21 +18,8 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # בנייה ודחיפה מתוך תיקיית k8s/deploy02 ושיוך לשם ה-Image החדש
     - name: Build and Push Docker Image
       run: |
         cd k8s/deploy02
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v${{ github.run_number }} .
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v${{ github.run_number }}
-
-    - name: Set Kubernetes Context
-      uses: azure/k8s-set-context@v4
-      with:
-        method: kubeconfig
-        kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
-    # הרצת הקובץ החדש ועדכון ה-Image בקלאסטר ב-Namespace הנכון
-    - name: Deploy to Kubernetes Cluster
-      run: |
-        kubectl apply -f k8s/deploy02/deploy02.yaml
-        kubectl set image deployment/deploy02-deployment deploy02=${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v${{ github.run_number }} -n deploy02 --record=true
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v1 .
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v1
