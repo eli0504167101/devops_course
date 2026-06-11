@@ -1,0 +1,13 @@
+FROM alpine:3.19
+
+# התקנת אנסיבל וכלי עזר ל-SSH
+RUN apk update && apk add ansible openssh-client sshpass python3
+
+# יצירת תיקיית עבודה לפלייבוקים שלנו
+WORKDIR /ansible
+
+# הגדרת המשתמש (אופציונלי, אפשר להישאר כ-root ב-Master)
+RUN adduser -D ansible
+
+# נשאיר את ה-Master פתוח עם Shell
+CMD ["sh"]

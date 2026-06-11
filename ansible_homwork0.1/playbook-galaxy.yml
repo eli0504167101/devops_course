@@ -1,0 +1,23 @@
+---
+- name: Deploy Galaxy Flask App
+  hosts: all
+  tasks:
+    - name: Ensure Flask is installed
+      apt:
+        name: python3-flask
+        update_cache: yes
+
+    - name: Copy app code
+      copy:
+        src: ./app.py
+        dest: /opt/app.py
+        mode: '0755'
+
+    - name: Kill old process if exists
+      shell: "pkill -f 'python3 /opt/app.py' || true"
+      ignore_errors: yes
+
+    - name: Run Flask app in background
+      shell: "nohup python3 /opt/app.py > /opt/flask.log 2>&1 &"
+      async: 60
+      poll: 0

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  galaxy_mgmt:
+    image: ubuntu:22.04
+    container_name: galaxy_mgmt
+    tty: true
+    volumes:
+      - .:/ansible
+    working_dir: /ansible
+    networks:
+      - galaxy_net
+    command: >
+      bash -c "apt update && apt install -y ansible openssh-client sshpass && tail -f /dev/null"
+
+  galaxy_target:
+    image: ubuntu:22.04
+    container_name: galaxy_target
+    networks:
+      - galaxy_net
+    ports:
+      - "5015:5015"
+    command: >
+      bash -c "apt update && apt install -y openssh-server python3 python3-flask && mkdir /var/run/sshd && echo 'root:galaxy123' | chpasswd && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && /usr/sbin/sshd -D"
+
+networks:
+  galaxy_net:
+    driver: bridge

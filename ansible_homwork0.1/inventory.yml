@@ -1,0 +1,12 @@
+eall:
+  hosts:
+    galaxy_target:
+      ansible_host: galaxy_target
+      ansible_user: root
+      ansible_password: galaxy123
+      ansible_connection: ssh
+      ansible_port: 22
+  children:
+    webservers:
+      hosts:
+        galaxy_target:

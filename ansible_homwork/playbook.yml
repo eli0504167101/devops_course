@@ -1,0 +1,21 @@
+---
+
+- name: Setup Ansible Master and Slave Nodes
+  hosts: webservers
+  tasks:
+    - name: install flask
+      apt:
+        name: python3-flask
+        update_cache: yes
+      
+
+    - name: copy app.py to slave node
+      copy:
+        src: app/app.py
+        dest: /home/user/app.py
+      
+    - name: start flask app on slave node
+      shell: "nohup python3 /home/user/app.py &"
+      async: 10
+      poll: 0
+        

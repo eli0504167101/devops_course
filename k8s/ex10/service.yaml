@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-first-service   # השם של ה-Service שאתה מייצר
+spec:
+  type: ClusterIP          # סוג השירות: גישה פנימית מתוך הקלאסטר (מתאים לתרגיל)
+  selector:
+    app: my-app      # הקשר לפוד: חייב להתאים ב-100% ללייבל של הפוד שלך!
+  ports:
+    - protocol: TCP
+      port: 80             # הפורט שה-Service עצמו יקשיב לו בקלאסטר
+      targetPort: 80       # הפורט האמיתי שהאפליקציה (למשל nginx) מקשיבה לו בתוך הפוד

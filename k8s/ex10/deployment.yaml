@@ -1,0 +1,21 @@
+apiVersion: apps/v1        # 1. השתנה מ-v1 ל-apps/v1
+kind: Deployment           # 2. השתנה מ-Pod ל-Deployment
+metadata:
+  name: example-deployment
+  labels:
+    app: my-app
+spec:
+  replicas: 2             # 3. כאן אתה מגדיר את 3 הרפליקות שקובנרטיס יתחזק תמיד!
+  selector:
+    matchLabels:
+      app: my-app          # 4. אומר ל-Deployment אילו פודים הוא צריך לנהל
+  template:                # 5. מכאן ומטה: ה-Template (התבנית) לפיה ייווצרו 3 הפודים
+    metadata:
+      labels:
+        app: my-app        # חייב להתאים בדיוק ל-matchLabels למעלה
+    spec:
+      containers:
+        - name: my-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80

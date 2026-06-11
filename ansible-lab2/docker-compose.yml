@@ -1,0 +1,33 @@
+services:
+  ansible-slave:
+    build:
+      context: .
+      dockerfile: Dockerfile.slave
+      args:
+        # כאן אנחנו מחברים בין המשתנה ב-env למשתנה ב-Dockerfile
+        - USER_PASS=${ANSIBLE_PASSWORD}
+    container_name: ansible-slave
+    environment:
+      - ANSIBLE_PASSWORD=${ANSIBLE_PASSWORD}
+    ports:
+      - "8080:80"
+    networks:
+      - ansible-net
+
+  ansible-master:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: ansible-master
+    environment:
+      - ANSIBLE_PASSWORD=${ANSIBLE_PASSWORD}
+    volumes:
+      - ./ansible_project:/ansible
+    networks:
+      - ansible-net
+    stdin_open: true
+    tty: true
+
+networks:
+  ansible-net:
+    driver: bridge

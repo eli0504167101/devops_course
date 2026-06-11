@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  anmaster:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: anmaster
+    volumes:
+      - .:/ansible
+    networks:
+      - ansible_net
+
+  anslave:
+    build:
+      context: .
+      dockerfile: Dockerfile.slave
+    container_name: anslave
+    ports:
+      - "5015:5015"
+    networks:
+      - ansible_net
+
+networks:
+  ansible_net:
+    driver: bridge

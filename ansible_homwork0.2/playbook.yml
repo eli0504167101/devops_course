@@ -1,0 +1,29 @@
+---
+- name: Deploy Galaxy Flask App
+  hosts: anslave
+  become: yes
+  tasks:
+    - name: Install Flask on Slave
+      apt:
+        name: python3-flask
+        state: present
+        update_cache: yes
+
+    - name: Copy the application file
+      copy:
+        src: app.py
+        dest: /opt/app.py
+        mode: '0644'
+
+    - name: Stop existing app (ignore errors)
+      shell: "killall python3 || true"
+      ignore_errors: yes
+
+    - name: Start Flask in the background
+      shell: "nohup python3 /opt/app.py > /var/log/app.log 2>&1 &"
+      async: 10
+      poll: 0
+
+    - name: Wait for app to start
+      pause:
+        seconds: 2

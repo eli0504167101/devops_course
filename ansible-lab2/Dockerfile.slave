@@ -1,0 +1,17 @@
+FROM alpine:3.19
+RUN apk update && apk add openssh python3 sudo
+RUN ssh-keygen -A
+# הצהרה שנקבל משתנה בשם USER_PASS בזמן הבנייה
+ARG USER_PASS
+
+RUN echo "Building with user: ansible and pass: ${USER_PASS}"
+
+
+# שימוש במשתנה שקיבלנו מה-ARG
+RUN adduser -D ansible && \
+    echo "ansible:${USER_PASS}" | chpasswd
+    
+RUN echo "Building with user: ansible and pass: ${USER_PASS}"
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
