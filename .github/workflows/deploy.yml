@@ -1,25 +1,27 @@
-name: CI Deploy02 to Docker Hub
+name: Build and Push Latest to Docker Hub
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository code
-      uses: actions/checkout@v4
+    - name: Check out the code
+      uses: actions/checkout@v3
 
     - name: Log in to Docker Hub
-      uses: docker/login-action@v3
+      uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and Push Docker Image
-      run: |
-        cd k8s/deploy02
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v1 .
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:v1
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: eli00504167101/app-node:latest
