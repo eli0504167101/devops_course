@@ -27,4 +27,4 @@ jobs:
         # 2. הכתובת המדויקת לקובץ ה-Dockerfile
         file: ./CI-CD/github-action/Dockerfile
         push: true
-        tags: eli00504167101/app-node:latest
+        tags: eli0504167101/app-node:latest
