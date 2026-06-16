@@ -34,7 +34,7 @@ jobs:
     - name: Update Deployment YAML with new image tag
       run: |
         # פקודת sed שמחליפה את הטאג הישן בטאג החדש (מספר הריצה) בתוך הקובץ שלך
-        sed -i "s|image: eli00504167101/app-node:.*|image: eli0504167101/app-node:${{ github.run_number }}|g" argocd/nginx-pod.yaml
+        sed -i "s|image: eli0504167101/app-node:.*|image: eli0504167101/app-node:${{ github.run_number }}|g" argocd/nginx-pod.yaml
 
     # 4. ביצוע קומיט ודחיפה אוטומטית של קובץ ה-YAML המעודכן חזרה לגיט
     - name: Commit and Push changes to Git
