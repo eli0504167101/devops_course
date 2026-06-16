@@ -1,4 +1,4 @@
-name: Build and Push Latest to Docker Hub
+name: Build and Deploy with Tag Version
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,12 +19,28 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    # 1+2. בנייה ודחיפה עם מספר הריצה הסידורי של גיטהאב
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        # 1. אומרים לדוקר שהקוד וה-Dockerfile נמצאים בתוך התיקייה הזו
         context: ./CI-CD/github-action
-        # 2. הכתובת המדויקת לקובץ ה-Dockerfile
         file: ./CI-CD/github-action/Dockerfile
         push: true
-        tags: eli0504167101/app-node:latest
+        tags: |
+          eli00504167101/app-node:${{ github.run_number }}
+          eli00504167101/app-node:latest
+
+    # 3. עדכון אוטומטי של קובץ ה-YAML בתוך תיקיית argocd עם הגרסה החדשה
+    - name: Update Deployment YAML with new image tag
+      run: |
+        # פקודת sed שמחליפה את הטאג הישן בטאג החדש (מספר הריצה) בתוך הקובץ שלך
+        sed -i "s|image: eli00504167101/app-node:.*|image: eli00504167101/app-node:${{ github.run_number }}|g" argocd/nginx-pod.yaml
+
+    # 4. ביצוע קומיט ודחיפה אוטומטית של קובץ ה-YAML המעודכן חזרה לגיט
+    - name: Commit and Push changes to Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add argocd/nginx-pod.yaml
+        git commit -m "Automated deployment: updated image tag to build ${{ github.run_number }} [skip ci]"
+        git push origin master
