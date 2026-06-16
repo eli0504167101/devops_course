@@ -26,9 +26,10 @@ jobs:
         context: ./CI-CD/github-action
         file: ./CI-CD/github-action/Dockerfile
         push: true
+        # שימוש במשתנה המאובטח מה-Secrets כדי למנוע שגיאות הרשאה
         tags: |
-          eli00504167101/app-node:${{ github.run_number }}
-          eli00504167101/app-node:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/app-node:${{ github.run_number }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/app-node:latest
 
     # 3. עדכון אוטומטי של קובץ ה-YAML בתוך תיקיית argocd עם הגרסה החדשה
     - name: Update Deployment YAML with new image tag
