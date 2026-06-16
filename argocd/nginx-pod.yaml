@@ -7,6 +7,6 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: eli0504167101/app-node:latest # <--- תשנה בדיוק לשורה הזו
+    image: eli00504167101/app-node:21
     ports:
     - containerPort: 80
