@@ -32,9 +32,11 @@ jobs:
           ${{ secrets.DOCKERHUB_USERNAME }}/app-node:latest
 
     # 3. עדכון אוטומטי של קובץ ה-YAML בתוך תיקיית argocd עם הגרסה החדשה
+    # 3. עדכון אוטומטי של קובץ ה-YAML עם הגרסה החדשה
     - name: Update Deployment YAML with new image tag
       run: |
-        sed -i "s|image: ${{ secrets.DOCKERHUB_USERNAME }}/app-node:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/app-node:${{ github.run_number }}|g" argocd/nginx-pod.yaml
+        # פקודה חכמה שמחפשת את השורה עם app-node ומחליפה את הטאג במספר הריצה
+        sed -i "s|image: .*app-node:.*|image: eli00504167101/app-node:${{ github.run_number }}|g" argocd/nginx-pod.yaml
 
     # 4. ביצוע קומיט ודחיפה אוטומטית של קובץ ה-YAML המעודכן חזרה לגיט
     - name: Commit and Push changes to Git
@@ -42,5 +44,5 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git add argocd/nginx-pod.yaml
-        git commit -m "Automated deployment: updated image tag to build ${{ github.run_number }} [skip ci]"
-        git push origin master
+        # מוודאים שיש שינויים לפני שעושים קומיט כדי למנוע קריסה של ה-Pipeline
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Automated deployment: updated image tag to build ${{ github.run_number }} [skip ci]" && git push origin master)
