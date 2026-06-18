@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    
+    triggers {
+        // הגדרה לג'נקינס להאזין לגישת Webhook מ-GitHub/GitLab
+        githubPush() 
+    }
+
+    environment {
+        REGISTRY = "docker.io/eli0504167101"
+        IMAGE_NAME = "python-clock-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Cloning Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                echo 'Running python linter or tests...'
+                // כאן אפשר להריץ flake8 או pytest במידת הצורך
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    // בניית ה-Image עם ה-Tag של מספר הריצה הנוכחי
+                    sh "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                    
+                    // דחיפה ל-Docker Registry (ודא שפתחת מראש Credentials בג'נקינס בשם docker-hub-creds)
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Update ArgoCD Manifests') {
+            steps {
+                // עדכון אוטומטי של ה-Manifest ב-Git כדי ש-ArgoCD ימשוך את הגרסה החדשה
+                dir('k8s-manifests-repo') {
+                    git url: 'https://github.com/your-user/your-manifests-repo.git', branch: 'main', credentialsId: 'git-creds'
+                    
+                    // עדכון ה-Tag בקובץ ה-Deployment של התיקייה deploy02
+                    sh "sed -i 's|image: .*${IMAGE_NAME}:.*|image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}|g' deploy02/deployment.yaml"
+                    
+                    // דחיפה אוטומטית חזרה ל-Git
+                    sh 'git config user.name "Jenkins Automation"'
+                    sh 'git config user.email "jenkins@company.com"'
+                    sh 'git add deploy02/deployment.yaml'
+                    sh "git commit -m 'Automated image update to tag ${IMAGE_TAG} [skip ci]'"
+                    sh 'git push origin main'
+                }
+            }
+        }
+    }
+}
