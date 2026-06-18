@@ -12,7 +12,7 @@ def home():
     # האמת המקצועית: עדיף להשתמש ב-HTML בסיסי עם עיצוב קל כדי שזה ייראה טוב על המסך
     return f"""
     <html>
-        <head><title>My Home</title></head>
+        <head><title>My Home and</title></head>
         <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
             <h1>Welkome to the my home</h1>
             <p style="font-size: 1.2em; color: #555;">Current Date & Time:</p>
