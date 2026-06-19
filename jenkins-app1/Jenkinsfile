@@ -41,7 +41,7 @@ pipeline {
             steps {
                 // עדכון אוטומטי של ה-Manifest ב-Git כדי ש-ArgoCD ימשוך את הגרסה החדשה
                 dir('k8s-manifests-repo') {
-                    git url: 'https://github.com/your-user/your-manifests-repo.git', branch: 'main', credentialsId: 'git-creds'
+                    git url: 'https://github.com/eli0504167101/devops_course.gi', branch: 'master', credentialsId: 'git-creds'
                     
                     // עדכון ה-Tag בקובץ ה-Deployment של התיקייה deploy02
                     sh "sed -i 's|image: .*${IMAGE_NAME}:.*|image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}|g' deploy02/deployment.yaml"
@@ -49,9 +49,9 @@ pipeline {
                     // דחיפה אוטומטית חזרה ל-Git
                     sh 'git config user.name "Jenkins Automation"'
                     sh 'git config user.email "jenkins@company.com"'
-                    sh 'git add deploy02/deployment.yaml'
+                    sh 'git add jenkins-app1/jenkinsfile'
                     sh "git commit -m 'Automated image update to tag ${IMAGE_TAG} [skip ci]'"
-                    sh 'git push origin main'
+                    sh 'git push origin master'
                 }
             }
         }
