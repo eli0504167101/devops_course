@@ -29,6 +29,7 @@ pipeline {
         stage('Build & Push Docker Image') {
             steps {
                 script {
+                    dir('jenkins-app1')
                     // בניית ה-Image עם ה-Tag של מספר הריצה הנוכחי
                     sh "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
                     
