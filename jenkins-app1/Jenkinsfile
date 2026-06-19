@@ -41,16 +41,16 @@ pipeline {
                         git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
                         '''
                         
-                      withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                  withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
     sh '''
-    # 1. הגדרת ה-remote כמשתנה זמני עם האימות
-    git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git
+    # יצירת Remote זמני ללא קשר ל-origin הקיים
+    git remote add push-origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git || true
     
-    # 2. ביצוע הפוש בצורה הכי נקייה שיש
-    git push origin master
+    # ביצוע הפוש לערוץ החדש
+    git push push-origin master
     
-    # 3. ניקוי: החזרת ה-remote למצב ללא סיסמה (אופציונלי אך מומלץ)
-    git remote set-url origin https://github.com/eli0504167101/devops_course.git
+    # ניקוי הערוץ הזמני
+    git remote remove push-origin
     '''
 }
                     }
