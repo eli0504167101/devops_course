@@ -45,12 +45,18 @@ pipeline {
                     sh "git add jenkins-app1/deployment.yaml"
                     sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
                     
-            withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-    // אנחנו מוחקים כל הגדרה קודמת של אימות כדי שלא יתערבו
+        withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+    // מחיקת הגדרות עבר כדי לוודא שאין התנגשויות
     sh 'git config --global --unset credential.helper || true'
     
-    // פקודת ה-push הישירה והבטוחה ביותר
-    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git master'
+    // הוספת Remote זמני בשם push-repo, בלי לגעת ב-origin המקורי
+    sh 'git remote add push-repo https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git || true'
+    
+    // דחיפה ל-Remote הזמני
+    sh 'git push push-repo master'
+    
+    // ניקוי - מחיקת ה-Remote הזמני בסיום
+    sh 'git remote remove push-repo'
 }
                 }
             }
