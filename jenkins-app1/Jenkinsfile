@@ -39,16 +39,19 @@ pipeline {
                         git add jenkins-app1/deployment.yaml
                         git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
                         '''
-                      withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                     withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
     sh '''
-    # הגדרת הגדרות ה-Git בצורה נקייה
+    # 1. הגדרת ה-credential helper
     git config --local credential.helper store
     echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
     
-    # ביצוע ה-push ישירות מול ה-origin (כבר מוגדר ב-Checkout)
+    # 2. משיכה של השינויים החדשים מה-Remote ושילובם (Rebase)
+    git pull origin master --rebase
+    
+    # 3. דחיפה של השינויים שלנו (כולל הקומיט של ה-deployment)
     git push origin HEAD:master
     
-    # ניקוי העקבות
+    # 4. ניקוי
     rm ~/.git-credentials
     git config --local --unset credential.helper
     '''
