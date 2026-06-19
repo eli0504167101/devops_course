@@ -39,9 +39,21 @@ pipeline {
                         git add jenkins-app1/deployment.yaml
                         git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
                         '''
-                        withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                            sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
-                        }
+                      withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+    sh '''
+    # 1. יצירת URL עם משתני סביבה בצורה בטוחה
+    REMOTE_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git"
+    
+    # 2. הוספת Remote זמני
+    git remote add push-repo "${REMOTE_URL}" || git remote set-url push-repo "${REMOTE_URL}"
+    
+    # 3. ביצוע ה-push ל-Remote הזה
+    git push push-repo HEAD:master
+    
+    # 4. ניקוי ה-Remote כדי לא להשאיר סיסמאות בקונפיגורציה
+    git remote remove push-repo
+    '''
+}
                     }
                 }
             }
