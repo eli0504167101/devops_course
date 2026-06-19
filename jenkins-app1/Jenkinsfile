@@ -41,17 +41,17 @@ pipeline {
                         '''
                       withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
     sh '''
-    # 1. יצירת URL עם משתני סביבה בצורה בטוחה
-    REMOTE_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git"
+    # הגדרת ה-URL כמשתנה מבודד
+    REPO_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git"
     
-    # 2. הוספת Remote זמני
-    git remote add push-repo "${REMOTE_URL}" || git remote set-url push-repo "${REMOTE_URL}"
+    # הגדרת ה-Remote הזמני
+    git remote add temp-push "${REPO_URL}" || git remote set-url temp-push "${REPO_URL}"
     
-    # 3. ביצוע ה-push ל-Remote הזה
-    git push push-repo HEAD:master
+    # ביצוע ה-Push ל-Remote הזמני
+    git push temp-push HEAD:master
     
-    # 4. ניקוי ה-Remote כדי לא להשאיר סיסמאות בקונפיגורציה
-    git remote remove push-repo
+    # ניקוי
+    git remote remove temp-push
     '''
 }
                     }
