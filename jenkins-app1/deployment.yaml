@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: clock-app
-        image: docker.io/eli0504167101/python-clock-app:35
+        image: docker.io/eli0504167101/python-clock-app:36
         ports:
         - containerPort: 5000
 ---
