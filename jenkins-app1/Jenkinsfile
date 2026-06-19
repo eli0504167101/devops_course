@@ -27,13 +27,14 @@ pipeline {
                 }
             }
         }
-
-       stage('Update ArgoCD Manifests') {
+stage('Update ArgoCD Manifests') {
     steps {
         dir('k8s-manifests-repo') {
             script {
+                // 1. עדכון קובץ ה-YAML
                 sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
                 
+                // 2. ביצוע Commit בצורה נקייה
                 sh '''
                 git config user.email "jenkins@local.com"
                 git config user.name "Jenkins CI"
@@ -41,8 +42,8 @@ pipeline {
                 git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
                 '''
                 
+                // 3. ביצוע Push מאובטח (ללא שינוי Remote וללא סימני '...')
                 withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                    // הפתרון המקצועי: שימוש בכתובת המלאה בשורת הפקודה עם הפרדה ל-Variables
                     sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
                 }
             }
