@@ -45,16 +45,11 @@ pipeline {
                     sh "git add jenkins-app1/deployment.yaml"
                     sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
                     
-                  withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                        // מחיקת ה-origin הקיים כדי למנוע שגיאות התאמה
-                        sh 'git remote remove origin'
-                        
-                        // הגדרת ה-origin מחדש בצורה נקייה עם ה-Token
-                        sh 'git remote add origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git'
-                        
-                        // דחיפה סופית
-                        sh 'git push origin master'
-                    }
+                withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                 // השתמש בכתובת המקורית של ה-origin, אבל תעקוף את האימות עם הטוקן ברגע ה-push
+                // שים לב: אנחנו משתמשים בגרש בודד כדי למנוע מגרובי לנסות לפרש את המשתנים
+                sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git master'
+}
                 }
             }
         }
