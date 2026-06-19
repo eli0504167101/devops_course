@@ -46,17 +46,9 @@ pipeline {
                     sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
                     
         withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-    // מחיקת הגדרות עבר כדי לוודא שאין התנגשויות
-    sh 'git config --global --unset credential.helper || true'
-    
-    // הוספת Remote זמני בשם push-repo, בלי לגעת ב-origin המקורי
-    sh 'git remote add push-repo https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git || true'
-    
-    // דחיפה ל-Remote הזמני
-    sh 'git push push-repo master'
-    
-    // ניקוי - מחיקת ה-Remote הזמני בסיום
-    sh 'git remote remove push-repo'
+    // אנחנו עושים הכל בשורה אחת בלי להוסיף רמוטים ובלי להגדיר קונפיגורציות
+    // המשתנה GIT_PASSWORD מוחלף בטוקן האמיתי בתוך ה-Shell, וג'נקינס מסתיר אותו מהלוג
+    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
 }
                 }
             }
