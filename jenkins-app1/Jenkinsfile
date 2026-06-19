@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // הגדרת משתנים גלובליים בצורה מסודרת
         DOCKER_IMAGE = "docker.io/eli0504167101/python-clock-app"
-        K8S_MANIFEST_REPO = "https://github.com/eli0504167101/devops_course.git"
     }
 
     stages {
@@ -25,30 +23,28 @@ pipeline {
                 script {
                     dir('jenkins-app1') {
                         sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
-                        // ניתן להוסיף כאן docker push אם תרצה
                     }
                 }
             }
         }
 
-       stage('Update ArgoCD Manifests') {
-    steps {
-        dir('k8s-manifests-repo') {
-            script {
-                // עדכון הקובץ
-                sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
-                
-                // הגדרות גיט וביצוע Commit
-                sh '''
-                git config user.email "jenkins@local.com"
-                git config user.name "Jenkins CI"
-                git add jenkins-app1/deployment.yaml
-                git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
-                '''
-                
-                // ביצוע Push מאובטח
-                withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
+        stage('Update ArgoCD Manifests') {
+            steps {
+                dir('k8s-manifests-repo') {
+                    script {
+                        sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
+                        
+                        sh '''
+                        git config user.email "jenkins@local.com"
+                        git config user.name "Jenkins CI"
+                        git add jenkins-app1/deployment.yaml
+                        git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
+                        '''
+                        
+                        withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                            sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
+                        }
+                    }
                 }
             }
         }
