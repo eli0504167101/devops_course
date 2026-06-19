@@ -2,11 +2,13 @@ pipeline {
     agent any
 
     environment {
+        // הגדרת משתנים גלובליים בצורה מסודרת
         DOCKER_IMAGE = "docker.io/eli0504167101/python-clock-app"
+        K8S_MANIFEST_REPO = "https://github.com/eli0504167101/devops_course.git"
     }
 
     stages {
-        stage('Cloning Code') {
+        stage('Checkout SCM') {
             steps {
                 checkout scm
             }
@@ -14,7 +16,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                echo 'Running python linter or tests...'
+                echo "Running python linter or tests..."
             }
         }
 
@@ -23,6 +25,7 @@ pipeline {
                 script {
                     dir('jenkins-app1') {
                         sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
+                        // ניתן להוסיף כאן docker push אם תרצה
                     }
                 }
             }
@@ -31,79 +34,20 @@ pipeline {
         stage('Update ArgoCD Manifests') {
             steps {
                 dir('k8s-manifests-repo') {
-                    // משיכת התיקייה
-                    git url: 'https://github.com/eli0504167101/devops_course.git',
-                        credentialsId: 'github-creds',
-                        branch: 'master'
-                    
-                    // עדכון הטאג של האימג' בתוך קובץ ה-yaml החדש שיצרת
+                    // ביצוע עדכון ה-YAML
                     sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
                     
-                    // הגדרות גיט ודחיפה חזרה
-                    sh "git config user.email 'jenkins@local.com'"
-                    sh "git config user.name 'Jenkins CI'"
-                    sh "git add jenkins-app1/deployment.yaml"
-                    sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
+                    // הגדרות Git מקומיות לצורך ה-Commit
+                    sh 'git config user.email "jenkins@local.com"'
+                    sh 'git config user.name "Jenkins CI"'
+                    sh 'git add jenkins-app1/deployment.yaml'
+                    sh 'git commit -m "Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]"'
                     
-       pipeline {
-    agent any
-
-    environment {
-        DOCKER_IMAGE = "docker.io/eli0504167101/python-clock-app"
-    }
-
-    stages {
-        stage('Cloning Code') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                echo 'Running python linter or tests...'
-            }
-        }
-
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    dir('jenkins-app1') {
-                        sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
+                    // ביצוע Push מאובטח תוך שימוש ב-Credentials
+                    withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                        sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
                     }
                 }
-            }
-        }
-
-        stage('Update ArgoCD Manifests') {
-            steps {
-                dir('k8s-manifests-repo') {
-                    // משיכת התיקייה
-                    git url: 'https://github.com/eli0504167101/devops_course.git',
-                        credentialsId: 'github-creds',
-                        branch: 'master'
-                    
-                    // עדכון הטאג של האימג' בתוך קובץ ה-yaml החדש שיצרת
-                    sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
-                    
-                    // הגדרות גיט ודחיפה חזרה
-                    sh "git config user.email 'jenkins@local.com'"
-                    sh "git config user.name 'Jenkins CI'"
-                    sh "git add jenkins-app1/deployment.yaml"
-                    sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
-                    
-        withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-              sh '''
-               # הגדרת ה-remote מחדש עם הרשאה בטוחה
-               git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git
-               # ביצוע ה-push הרגיל
-               git push origin master
-               '''
-        }              }
-            }
-        }
-    }
-}          }
             }
         }
     }
