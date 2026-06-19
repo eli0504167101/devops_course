@@ -1,15 +1,8 @@
 pipeline {
     agent any
-    
-    triggers {
-        // הגדרה לג'נקינס להאזין לגישת Webhook מ-GitHub/GitLab
-        githubPush() 
-    }
 
     environment {
-        REGISTRY = "docker.io/eli0504167101"
-        IMAGE_NAME = "python-clock-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        DOCKER_IMAGE = "docker.io/eli0504167101/python-clock-app"
     }
 
     stages {
@@ -22,38 +15,40 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Running python linter or tests...'
-                // כאן אפשר להריץ flake8 או pytest במידת הצורך
             }
         }
 
-       stage('Build & Push Docker Image') {
-    steps {
-        script {
-            // הבלוק חייב להכיל גוף (body) בתוך סוגריים מסולסלים
-            dir('jenkins-app1') {
-                sh "docker build -t docker.io/eli0504167101/python-clock-app:${env.BUILD_NUMBER} ."
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    dir('jenkins-app1') {
+                        sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
+                    }
+                }
             }
         }
-    }
-}
 
-       stage('Update ArgoCD Manifests') {
-    steps {
-        dir('k8s-manifests-repo') {
-            git url: 'https://github.com/eli0504167101/devops_course.git',
-                credentialsId: 'github-creds',
-                branch: 'master'
-            
-            // פקודת ה-sed כעת פונה ישירות לקובץ בתוך תיקיית הפרויקט
-            sh "sed -i 's|image: .*python-clock-app:.*|image: docker.io/eli0504167101/python-clock-app:${BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
-            
-            sh "git config user.email 'jenkins@local.com'"
-            sh "git config user.name 'Jenkins CI'"
-            sh "git add jenkins-app1/deployment.yaml"
-            sh "git commit -m 'Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]'"
-            
-            withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git master"
+        stage('Update ArgoCD Manifests') {
+            steps {
+                dir('k8s-manifests-repo') {
+                    // משיכת התיקייה
+                    git url: 'https://github.com/eli0504167101/devops_course.git',
+                        credentialsId: 'github-creds',
+                        branch: 'master'
+                    
+                    // עדכון הטאג של האימג' בתוך קובץ ה-yaml החדש שיצרת
+                    sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
+                    
+                    // הגדרות גיט ודחיפה חזרה
+                    sh "git config user.email 'jenkins@local.com'"
+                    sh "git config user.name 'Jenkins CI'"
+                    sh "git add jenkins-app1/deployment.yaml"
+                    sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
+                    
+                    withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                        sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git master"
+                    }
+                }
             }
         }
     }
