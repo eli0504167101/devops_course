@@ -7,6 +7,6 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: eli00504167101/app-node:61
+    image: eli00504167101/app-node:62
     ports:
     - containerPort: 80
