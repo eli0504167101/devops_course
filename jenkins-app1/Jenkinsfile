@@ -31,22 +31,24 @@ pipeline {
             }
         }
 
-        stage('Update ArgoCD Manifests') {
-            steps {
-                dir('k8s-manifests-repo') {
-                    // ביצוע עדכון ה-YAML
-                    sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
-                    
-                    // הגדרות Git מקומיות לצורך ה-Commit
-                    sh 'git config user.email "jenkins@local.com"'
-                    sh 'git config user.name "Jenkins CI"'
-                    sh 'git add jenkins-app1/deployment.yaml'
-                    sh 'git commit -m "Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]"'
-                    
-                    // ביצוע Push מאובטח תוך שימוש ב-Credentials
-                    withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                        sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
-                    }
+       stage('Update ArgoCD Manifests') {
+    steps {
+        dir('k8s-manifests-repo') {
+            script {
+                // עדכון הקובץ
+                sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
+                
+                // הגדרות גיט וביצוע Commit
+                sh '''
+                git config user.email "jenkins@local.com"
+                git config user.name "Jenkins CI"
+                git add jenkins-app1/deployment.yaml
+                git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
+                '''
+                
+                // ביצוע Push מאובטח
+                withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
                 }
             }
         }
