@@ -41,17 +41,16 @@ pipeline {
                         '''
                       withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
     sh '''
-    # הגדרת ה-URL כמשתנה מבודד
-    REPO_URL="https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git"
+    # הגדרת הגדרות ה-Git בצורה נקייה
+    git config --local credential.helper store
+    echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
     
-    # הגדרת ה-Remote הזמני
-    git remote add temp-push "${REPO_URL}" || git remote set-url temp-push "${REPO_URL}"
+    # ביצוע ה-push ישירות מול ה-origin (כבר מוגדר ב-Checkout)
+    git push origin HEAD:master
     
-    # ביצוע ה-Push ל-Remote הזמני
-    git push temp-push HEAD:master
-    
-    # ניקוי
-    git remote remove temp-push
+    # ניקוי העקבות
+    rm ~/.git-credentials
+    git config --local --unset credential.helper
     '''
 }
                     }
