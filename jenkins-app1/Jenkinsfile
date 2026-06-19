@@ -37,22 +37,23 @@ pipeline {
     }
 }
 
-        stage('Update ArgoCD Manifests') {
-            steps {
-                // עדכון אוטומטי של ה-Manifest ב-Git כדי ש-ArgoCD ימשוך את הגרסה החדשה
-                dir('k8s-manifests-repo') {
-                    git url: 'https://github.com/eli0504167101/devops_course.git', branch: 'master', credentialsId: 'git-creds'
-                    
-                    // עדכון ה-Tag בקובץ ה-Deployment של התיקייה deploy02
-                    sh "sed -i 's|image: .*${IMAGE_NAME}:.*|image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}|g' deploy02/deployment.yaml"
-                    
-                    // דחיפה אוטומטית חזרה ל-Git
-                    sh 'git config user.name "Jenkins Automation"'
-                    sh 'git config user.email "jenkins@company.com"'
-                    sh 'git add jenkins-app1/jenkinsfile'
-                    sh "git commit -m 'Automated image update to tag ${IMAGE_TAG} [skip ci]'"
-                    sh 'git push origin master'
-                }
+       stage('Update ArgoCD Manifests') {
+    steps {
+        dir('k8s-manifests-repo') {
+            git url: 'https://github.com/eli0504167101/devops_course.git',
+                credentialsId: 'github-creds',
+                branch: 'master'
+            
+            // פקודת ה-sed כעת פונה ישירות לקובץ בתוך תיקיית הפרויקט
+            sh "sed -i 's|image: .*python-clock-app:.*|image: docker.io/eli0504167101/python-clock-app:${BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
+            
+            sh "git config user.email 'jenkins@local.com'"
+            sh "git config user.name 'Jenkins CI'"
+            sh "git add jenkins-app1/deployment.yaml"
+            sh "git commit -m 'Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]'"
+            
+            withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git master"
             }
         }
     }
