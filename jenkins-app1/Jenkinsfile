@@ -45,13 +45,12 @@ pipeline {
                     sh "git add jenkins-app1/deployment.yaml"
                     sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
                     
-              withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-    // שימוש ב-git credential store זמני בתוך הסשן של ה-sh
-    sh '''
-    git config --global credential.helper store
-    echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
-    git push origin master
-    '''
+            withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+    // אנחנו מוחקים כל הגדרה קודמת של אימות כדי שלא יתערבו
+    sh 'git config --global --unset credential.helper || true'
+    
+    // פקודת ה-push הישירה והבטוחה ביותר
+    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git master'
 }
                 }
             }
