@@ -46,11 +46,13 @@ pipeline {
                     sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
                     
         withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-    // אנחנו עושים הכל בשורה אחת בלי להוסיף רמוטים ובלי להגדיר קונפיגורציות
-    // המשתנה GIT_PASSWORD מוחלף בטוקן האמיתי בתוך ה-Shell, וג'נקינס מסתיר אותו מהלוג
-    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git HEAD:master'
-}
-                }
+    sh '''
+    # הגדרת ה-remote מחדש עם הרשאה בטוחה
+    git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git
+    # ביצוע ה-push הרגיל
+    git push origin master
+    '''
+}              }
             }
         }
     }
