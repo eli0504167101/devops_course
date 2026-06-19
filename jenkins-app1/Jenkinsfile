@@ -35,7 +35,7 @@ pipeline {
                         // עדכון ה-YAML
                         sh "sed -i 's|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g' jenkins-app1/deployment.yaml"
                         
-                        // ביצוע פעולות ה-Git בבלוק אחד מאוחד
+                        // ביצוע פעולות ה-Git בבלוק אחד מאוחד בעזרת גרשיים משולשים
                         sh '''
                         git config user.email "jenkins@local.com"
                         git config user.name "Jenkins CI"
