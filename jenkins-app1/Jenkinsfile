@@ -26,21 +26,16 @@ pipeline {
             }
         }
 
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    dir('jenkins-app1')
-                    // בניית ה-Image עם ה-Tag של מספר הריצה הנוכחי
-                    sh "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
-                    
-                    // דחיפה ל-Docker Registry (ודא שפתחת מראש Credentials בג'נקינס בשם docker-hub-creds)
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
-                }
+       stage('Build & Push Docker Image') {
+    steps {
+        script {
+            // הבלוק חייב להכיל גוף (body) בתוך סוגריים מסולסלים
+            dir('jenkins-app1') {
+                sh "docker build -t docker.io/eli0504167101/python-clock-app:${env.BUILD_NUMBER} ."
             }
         }
+    }
+}
 
         stage('Update ArgoCD Manifests') {
             steps {
