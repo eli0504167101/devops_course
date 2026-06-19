@@ -46,8 +46,13 @@ pipeline {
                     sh "git commit -m 'Automated deployment: updated image tag to build ${env.BUILD_NUMBER} [skip ci]'"
                     
                   withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                        // פתרון מוחלט: שימוש בגרשים בודדים בשילוב משתני סביבה ישירים של Linux
-                        sh 'git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git'
+                        // מחיקת ה-origin הקיים כדי למנוע שגיאות התאמה
+                        sh 'git remote remove origin'
+                        
+                        // הגדרת ה-origin מחדש בצורה נקייה עם ה-Token
+                        sh 'git remote add origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/eli0504167101/devops_course.git'
+                        
+                        // דחיפה סופית
                         sh 'git push origin master'
                     }
                 }
