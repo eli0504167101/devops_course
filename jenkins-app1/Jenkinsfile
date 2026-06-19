@@ -41,17 +41,23 @@ pipeline {
                         '''
                      withCredentials([usernamePassword(credentialsId: 'github-creds', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
     sh '''
-    # 1. הגדרת ה-credential helper
     git config --local credential.helper store
     echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
     
-    # 2. משיכה של השינויים החדשים מה-Remote ושילובם (Rebase)
-    git pull origin master --rebase
+    # 1. משיכת כל העדכונים מה-Remote
+    git fetch origin
     
-    # 3. דחיפה של השינויים שלנו (כולל הקומיט של ה-deployment)
+    # 2. איפוס ה-Branch המקומי למה שיש ב-Remote (כדי למנוע את ה-rejected)
+    git reset --hard origin/master
+    
+    # 3. כאן אנחנו מבצעים שוב את ה-sed (כי ה-reset החזיר את הקובץ למצב הקודם)
+    sed -i "s|image: .*python-clock-app:.*|image: ${DOCKER_IMAGE}:${env.BUILD_NUMBER}|g" jenkins-app1/deployment.yaml
+    
+    # 4. ביצוע ה-commit וה-push
+    git add jenkins-app1/deployment.yaml
+    git commit -m "Automated deployment: updated image tag to build ${BUILD_NUMBER} [skip ci]"
     git push origin HEAD:master
     
-    # 4. ניקוי
     rm ~/.git-credentials
     git config --local --unset credential.helper
     '''
