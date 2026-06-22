@@ -36,7 +36,7 @@ jobs:
     - name: Update Deployment YAML with new image tag
       run: |
         # ודא שהנתיב כאן תואם לנתיב המדויק ב-Git ש-ArgoCD מסתכל עליו
-        sed -i "s|image: eli0504167101/deploy02:.*|image: eli0504167101/deploy02:${{ github.run_number }}|g" k8s/deploy02/deployment.yaml
+        sed -i "s|image: eli0504167101/deploy02:.*|image: eli0504167101/deploy02:${{ github.run_number }}|g" k8s/deploy02/deploy02.yaml
 
     - name: Commit and Push changes to Git
       run: |
