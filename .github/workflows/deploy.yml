@@ -35,14 +35,12 @@ jobs:
     # 3. עדכון אוטומטי של קובץ ה-YAML עם הגרסה החדשה
     - name: Update Deployment YAML with new image tag
       run: |
-        # פקודה חכמה שמחפשת את השורה עם app-node ומחליפה את הטאג במספר הריצה
-        sed -i "s|image: .*app-node:.*|image: eli00504167101/app-node:${{ github.run_number }}|g" argocd/nginx-pod.yaml
+        # ודא שהנתיב כאן תואם לנתיב המדויק ב-Git ש-ArgoCD מסתכל עליו
+        sed -i "s|image: .*|image: eli0504167101/deploy02:${{ github.run_number }}|g" k8s/deploy02/deployment.yaml
 
-    # 4. ביצוע קומיט ודחיפה אוטומטית של קובץ ה-YAML המעודכן חזרה לגיט
     - name: Commit and Push changes to Git
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add argocd/nginx-pod.yaml
-        # מוודאים שיש שינויים לפני שעושים קומיט כדי למנוע קריסה של ה-Pipeline
+        git add k8s/deploy02/deployment.yaml
         git diff --quiet && git diff --staged --quiet || (git commit -m "Automated deployment: updated image tag to build ${{ github.run_number }} [skip ci]" && git push origin master)
