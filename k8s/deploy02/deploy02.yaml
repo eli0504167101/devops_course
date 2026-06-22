@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: deploy02 # שם הקונטיינר כפי שביקשת
-        image: eli0504167101/deploy02:77
+        image: eli0504167101/deploy02:78
         ports:
         - containerPort: 5000
         resources:
