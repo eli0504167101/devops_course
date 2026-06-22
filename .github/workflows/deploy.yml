@@ -27,8 +27,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        context: ./CI-CD/github-action
-        file: ./CI-CD/github-action/Dockerfile
+        context: ./k8s/deploy02
+        file: ./k8s/deploy02/Dockerfile
         push: true
         # שימוש במשתנה המאובטח מה-Secrets כדי למנוע שגיאות הרשאה
         tags: |
