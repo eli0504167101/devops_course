@@ -33,7 +33,7 @@ jobs:
         # שימוש במשתנה המאובטח מה-Secrets כדי למנוע שגיאות הרשאה
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:${{ github.run_number }}
-          ${{ secrets.DOCKERHUB_USERNAME }}/deploy02:latest
+      
 
     # 3. עדכון אוטומטי של קובץ ה-YAML בתוך תיקיית argocd עם הגרסה החדשה
     # 3. עדכון אוטומטי של קובץ ה-YAML עם הגרסה החדשה
